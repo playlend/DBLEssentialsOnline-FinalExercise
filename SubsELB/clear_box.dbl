@@ -33,11 +33,9 @@ proc
 	cols = a_col_to - a_col_from + 1
 
 	;Clear the box, line by line
-	for count from 1 thru rows
+	for count from 0 thru rows
 	begin
-		xcall w_disp(a_wndid,
-		&	WD_POS,(a_row_from+1+count),a_col_from,
-		&	spaces(1:cols))
+		xcall w_disp(a_wndid, WD_POS,(a_row_from+count), a_col_from, spaces(1:cols))
 	end
 
 	xreturn

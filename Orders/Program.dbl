@@ -31,11 +31,11 @@ main Orders
 		max             ,i4,3       ;Maximum detail records currently supported
 	endrecord
 
-porc
+proc
 
-	xcall startup
-	xcall process
-	xcall shutdown
+	call Startup
+	call Process
+	call Shutdown
 
 	stop
 
@@ -214,21 +214,29 @@ Order_detail,
 	begin
 
 		incr count
+
+		if count>=max
+			call Extend_dynamic_memory
+ 
 		xcall s_bld(temp,,"Order Detail (Entering item %d of %d)",count,max)
 		xcall w_brdr(detail_id,WB_TITLE,%atrim(temp))
 
 		xcall input(detail_id,2,15,^m(strDetail[count].od_part,m_handle))
 		if ^m(strDetail[count].od_part,m_handle).eqs.""
-		begin
+		begin	
 			decr count
 			exitloop
 		end
 
 		xcall input(detail_id,4,15,^m(strDetail[count].od_qty,m_handle),1)
-		xcall input(detail_id,5,15,^m(strDetail[count].od_unitprice,m_handle),1)
+		xcall input(detail_id,5,15,^m(strDetail[count].od_unit_price,m_handle),1)
 
 		^m(strDetail[count].od_number,m_handle)=oh_number
 		^m(strDetail[count].od_item,m_handle)=count
+		
+
+		
+		
 
 		xcall clear_box(detail_id,2,15,5,60)
 	end
@@ -258,7 +266,7 @@ View_order,
 	xcall display_text(header_id,4,2,"Customer account:")
 	xcall display_text(header_id,5,2,"      Order date:")
 	xcall display_text(header_id,6,2,"       Placed by:")
-	xcall display_text(heeder_id,7,2,"       Sales rep:")
+	xcall display_text(header_id,7,2,"       Sales rep:")
 
 	repeat
 	begin
@@ -268,7 +276,8 @@ View_order,
 		if oh_number.eq.0
 			exitloop
 
-		if (%file_access(FileOp.ReadNext,hchan,header,oh_number).ne.FileResult.OK) then
+		;if (%file_access(FileOp.ReadNext,hchan,header,oh_number).ne.FileResult.OK) then
+		if (%file_access(FileOp.Read,hchan,header,oh_number).ne.FileResult.OK) then
 			xcall display_message("Order not found!")
 		else
 		begin
@@ -282,7 +291,7 @@ View_order,
 			xcall display_text(header_id,9,2,"Press RETURN to view order details: ")
 			xcall wait_key(header_id,9,38,keyPressed)
 
-			call view_order_detail
+			call View_order_detail
 
 			xcall clear_box(header_id,4,20,9,60)
 
